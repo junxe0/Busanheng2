@@ -26,6 +26,10 @@
 #define ACTION_PROVOKE  1
 #define ACTION_PULL		2
 
+int trainlength_input();
+int percent_input();
+int stm_inpput();
+
 int main(void) {
 	// 인트로
 	system("title 20242397 류준서 부산헹");
