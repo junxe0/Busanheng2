@@ -26,6 +26,7 @@
 #define ACTION_PROVOKE  1
 #define ACTION_PULL		2
 
+void intro();
 int trainlength_input();
 int percent_input();
 int stm_inpput();
@@ -42,9 +43,14 @@ int m_move_inpput(int, int);
 int m_movef(int, int, int, int*, int*, int*, int*);
 int m_aggroMinMax(int);
 void m_moveresult(int, int, int, int, int);
+void c_action(int);
+void z_action(int, int, int, int, int, int, int*, int*);
+int m_action_inpput(int, int);
+int m_actionf(int, int, int, int, int*, int*, int*, int*);
+int m_stmMinMax(int);
 
 int main(void) {
-	system("title 20242397 류준서 부산헹 2"); // 콘솔창 이름 변경
+	intro(); // 콘솔창 이름 변경
 
 	int train_length, p, stm, bstm = 0, count = 0;
 	train_length = trainlength_input(); // 기차 길이 입력
@@ -70,10 +76,10 @@ int main(void) {
 
 	int m_move = 0, m_action = 0, m_action_f = 0; // 마동석 관련
 
-	int c_result = 0, z_result = 0, m_result = 0; // 이동 결과
+	int c_result = 0, z_result = 0, m_result = 0, ATK = 0; // 이동 결과
 
 	while (1) { // 반복
-		count += 1; // 턴 추가
+		count++; // 턴 추가
 
 		int _c_aggro, _c_pos, c_baggro, c_bpos;
 		c_result = c_move(p, c_aggro, c_pos, &_c_aggro, &_c_pos, &c_baggro, &c_bpos); // 시민 이동
@@ -102,9 +108,22 @@ int main(void) {
 		printf("\n\n");
 
 		m_moveresult(m_result, m_bpos, m_pos, m_baggro, m_aggro); // 마동석 이동 출력
-	}
 
+		c_action(c_pos); // 시민 행동 출력
+		int _stm;
+		z_action(z_pos, c_pos, m_pos, m_aggro, c_aggro, stm, &_stm, &ATK); // 좀비 행동 출력
+		stm = _stm;
+
+		m_action = m_action_inpput(m_pos, z_pos); // 마동석 행동 선택
+		m_action_f = m_actionf(m_action, m_aggro, p, stm, &m_baggro, &_m_aggro, &bstm, &_stm); // 마동석 행동
+		m_aggro = m_aggroMinMax(_m_aggro); // 마동석 어그로 최댓값, 최솟값 확인
+		stm = m_stmMinMax(_stm);
+	}
 	return 0;
+}
+
+void intro() { // 콘솔 창 이름 변경
+	system("title 20242397 류준서 부산헹 2");
 }
 
 int trainlength_input(void) { // 기차 길이 입력
@@ -271,7 +290,7 @@ int m_move_inpput(int m_pos, int z_pos) { // 마동석 이동 선택
 	if (m_pos == z_pos + 1) {
 		printf("마동석의 이동 여부를 선택해주세요. ( %d:stay )\n", MOVE_STAY);
 		scanf_s("%d", &m_move);
-		while ((m_move >= 1)) {
+		while ((m_move != MOVE_STAY)) {
 			printf("마동석의 이동 여부를 선택해주세요. ( %d:stay )\n", MOVE_STAY);
 			scanf_s("%d", &m_move);
 		}
@@ -279,7 +298,7 @@ int m_move_inpput(int m_pos, int z_pos) { // 마동석 이동 선택
 	else {
 		printf("마동석의 이동 여부를 입력해주세요. ( %d:stay, %d:left )\n", MOVE_STAY, MOVE_LEFT);
 		scanf_s("%d", &m_move);
-		while ((m_move > 1) || (m_move < 0)) {
+		while ((m_move != MOVE_STAY) && (m_move != MOVE_LEFT)) {
 			printf("마동석의 이동 여부를 입력해주세요. ( %d:stay, %d:이동 )\n", MOVE_STAY, MOVE_LEFT);
 			scanf_s("%d", &m_move);
 		}
@@ -323,5 +342,117 @@ void m_moveresult(int m_result, int m_bpos, int m_pos, int m_baggro, int m_aggro
 	}
 	else if (m_result == 1) {
 		printf("마동석 : %d -> %d ( 어그로 : %d -> %d )\n\n", m_bpos - 1, m_pos - 1, m_baggro, m_aggro);
+	}
+}
+
+void c_action(int c_pos) {
+	if (c_pos == 2) {
+		printf("시민이 탈출에 성공하였습니다.\n");
+		system("color 9f");
+		exit(0);
+	}
+	else {
+		printf("시민은 아무것도 하지 않았습니다.\n");
+	}
+}
+
+void z_action(int z_pos, int c_pos, int m_pos, int m_aggro, int c_aggro, int stm, int *_stm, int *ATK) {
+	int bstm = stm;
+	if ((c_pos == (z_pos - 1)) && (m_pos == (z_pos + 1))) {
+		if (m_aggro >= c_aggro) {
+			stm--;
+			*_stm = stm;
+			printf("좀비가 마동석을 공격하였습니다. ( %d(C) vs. %d(M), 마동석 체력 : %d -> %d )\n", c_aggro, m_aggro, bstm, stm);
+			if (stm <= 0) {
+				*ATK = ATK_DONGSEOK;
+			}
+		}
+		else {
+			printf("시민을 지키는데 실패하였습니다...\n");
+			system("color 4f");
+			exit(0);
+		}
+	}
+	else if ((c_pos == (z_pos - 1)) || (m_pos == (z_pos + 1))) {
+		if (m_pos == (z_pos + 1)) {
+			stm--;
+			*_stm = stm;
+			printf("좀비가 마동석을 공격하였습니다. ( %d(C) vs. %d(M), 마동석 체력 : %d -> %d )\n", c_aggro, m_aggro, bstm, stm);
+			if (stm <= 0) {
+				*ATK = ATK_DONGSEOK;
+			}
+		}
+		else if (c_pos == (z_pos - 1)) {
+			printf("시민을 지키는데 실패하였습니다...\n");
+			system("color 4f");
+			exit(0);
+		}
+	}
+	else {
+		*_stm = stm;
+		printf("좀비는 아무도 공격하지 못했습니다.\n");
+	}
+}
+
+int m_action_inpput(int m_pos, int z_pos) {
+	int m_action;
+	if (m_pos == z_pos + 1) {
+		printf("마동석의 행동을 선택해주세요. ( 0:휴식, 1:도발, 2:붙들기 )\n");
+		scanf_s("%d", &m_action);
+		while ((m_action != ACTION_REST) && (m_action != ACTION_PROVOKE) && (m_action != ACTION_PULL)) {
+			printf("마동석의 행동을 선택해주세요. ( 0:stay, 1:도발, 2:붙들기 )\n");
+			scanf_s("%d", &m_action);
+		}
+		printf("\n");
+	}
+	else {
+		printf("마동석의 행동을 선택해주세요. ( 0:휴식, 1:도발 )\n");
+		scanf_s("%d", &m_action);
+		while ((m_action != ACTION_REST) && (m_action != ACTION_PROVOKE)) {
+			printf("마동석의 행동을 선택해주세요. ( 0:휴식, 1:도발 )\n");
+			scanf_s("%d", &m_action);
+		}
+		printf("\n");
+	}
+	return m_action;
+}
+
+int m_actionf(int m_action, int m_aggro, int p, int stm, int* m_baggro, int* _m_aggro, int* bstm, int* _stm) {
+	int result = 0, m_per = rand() % 100 + 1;
+	*m_baggro = m_aggro;// 어그로
+	*bstm = stm; // 체력
+	if (m_action == ACTION_REST) {
+		m_aggro--; // 어그로
+		stm++; // 체력
+		result = 0; // 결과 출력
+	}
+	else if (m_action == ACTION_PROVOKE) {
+		m_aggro = AGGRO_MAX; // 어그로
+		result = 1; // 결과 출력
+	}
+	else if (m_action == ACTION_PULL) {
+		m_aggro += 2; // 어그로
+		stm--; // 체력
+		if (m_per <= p) { // 붙들기 실패
+			result = 2; // 결과 출력
+		}
+		else if (m_per > p) { // 붙들기 성공
+			result = 3; // 결과 출력
+		}
+	}
+	*_m_aggro = m_aggro; // 어그로
+	*_stm = stm; // 체력
+	return result;
+}
+
+int m_stmMinMax(int _stm) { // 마동석 체력 최솟값 최댓값 판단
+	if (_stm >= STM_MAX) {
+		return STM_MAX; // 최댓값
+	}
+	else if (_stm <= STM_MIN) {
+		return STM_MIN; // 최솟값
+	}
+	else {
+		return _stm; // 원래 값
 	}
 }
