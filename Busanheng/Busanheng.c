@@ -41,6 +41,7 @@ void z_moveresult(int, int, int);
 int m_move_inpput(int, int);
 int m_movef(int, int, int, int*, int*, int*, int*);
 int m_aggroMinMax(int);
+void m_moveresult(int, int, int, int, int);
 
 int main(void) {
 	system("title 20242397 류준서 부산헹 2"); // 콘솔창 이름 변경
@@ -99,6 +100,8 @@ int main(void) {
 
 		train_box(train_length, c_pos, z_pos, m_pos); // 기차 상자
 		printf("\n\n");
+
+		m_moveresult(m_result, m_bpos, m_pos, m_baggro, m_aggro); // 마동석 이동 출력
 	}
 
 	return 0;
@@ -311,5 +314,14 @@ int m_aggroMinMax(int _m_aggro) { // 마동석 어그로 최솟값 최댓값 판단
 	}
 	else {
 		return _m_aggro; // 원래 값
+	}
+}
+
+void m_moveresult(int m_result, int m_bpos, int m_pos, int m_baggro, int m_aggro) {
+	if (m_result == 0) {
+		printf("마동석 : 제자리 %d ( 어그로 : %d -> %d )\n\n", m_pos - 1, m_baggro, m_aggro);
+	}
+	else if (m_result == 1) {
+		printf("마동석 : %d -> %d ( 어그로 : %d -> %d )\n\n", m_bpos - 1, m_pos - 1, m_baggro, m_aggro);
 	}
 }
