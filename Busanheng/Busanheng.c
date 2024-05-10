@@ -48,6 +48,7 @@ void z_action(int, int, int, int, int, int, int*, int*);
 int m_action_inpput(int, int);
 int m_actionf(int, int, int, int, int*, int*, int*, int*);
 int m_stmMinMax(int);
+int m_actionmsg(int, int, int, int, int, int);
 
 int main(void) {
 	intro(); // 콘솔창 이름 변경
@@ -118,6 +119,7 @@ int main(void) {
 		m_action_f = m_actionf(m_action, m_aggro, p, stm, &m_baggro, &_m_aggro, &bstm, &_stm); // 마동석 행동
 		m_aggro = m_aggroMinMax(_m_aggro); // 마동석 어그로 최댓값, 최솟값 확인
 		stm = m_stmMinMax(_stm);
+		m_actionmsg(m_action_f, m_pos, m_baggro, m_aggro, bstm, stm);
 	}
 	return 0;
 }
@@ -403,7 +405,6 @@ int m_action_inpput(int m_pos, int z_pos) {
 			printf("마동석의 행동을 선택해주세요. ( 0:stay, 1:도발, 2:붙들기 )\n");
 			scanf_s("%d", &m_action);
 		}
-		printf("\n");
 	}
 	else {
 		printf("마동석의 행동을 선택해주세요. ( 0:휴식, 1:도발 )\n");
@@ -412,8 +413,8 @@ int m_action_inpput(int m_pos, int z_pos) {
 			printf("마동석의 행동을 선택해주세요. ( 0:휴식, 1:도발 )\n");
 			scanf_s("%d", &m_action);
 		}
-		printf("\n");
 	}
+	printf("\n");
 	return m_action;
 }
 
@@ -454,5 +455,24 @@ int m_stmMinMax(int _stm) { // 마동석 체력 최솟값 최댓값 판단
 	}
 	else {
 		return _stm; // 원래 값
+	}
+}
+
+int m_actionmsg(int m_action_f, int m_pos, int m_baggro, int m_aggro, int bstm, int stm) {
+	if (m_action_f == 0) {
+		printf("마동석이 휴식을 취했습니다.\n");
+		printf("마동석 : %d ( 어그로 : %d -> %d, 체력 : %d -> %d )\n", m_pos - 1, m_baggro, m_aggro, bstm, stm);
+	}
+	else if (m_action_f == 1) {
+		printf("마동석이 좀비를 도발했습니다...\n");
+		printf("마동석 : %d ( 어그로 : %d -> %d, 체력 : %d )\n", m_pos - 1, m_baggro, m_aggro, stm);
+	}
+	else if (m_action_f == 2) {
+		printf("마동석이 좀비 붙들기에 실패했습니다...\n");
+		printf("마동석 : %d ( 어그로 : %d -> %d, 체력 : %d -> %d )\n", m_pos - 1, m_baggro, m_aggro, bstm, stm);
+	}
+	else if (m_action_f == 3) {
+		printf("마동석이 좀비 붙들기에 성공했습니다. 좀비는 다음턴에 움직일 수 없습니다.\n");
+		printf("마동석 : %d ( 어그로 : %d -> %d, 체력 : %d -> %d )\n", m_pos - 1, m_baggro, m_aggro, bstm, stm);
 	}
 }
