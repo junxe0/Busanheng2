@@ -49,7 +49,7 @@ int z_who_atk2(int, int, int, int, int *, int *);
 int z_action(int, int, int, int, int, int, int *, int *, int *);
 void ATK_f(int, int, int, int, int, int);
 int m_action_inpput(int, int);
-int m_actionf(int, int, int, int, int, int *, int *, int *, int *, int *);
+int m_actionf(int, int, int, int, int, int *, int *, int *);
 int m_pull(int);
 int m_stmMinMax(int);
 int m_actionmsg(int, int, int, int, int, int);
@@ -123,8 +123,10 @@ int main(void) {
 
 		ATK_f(z_action_r, m_aggro, c_aggro, bstm, stm, ATK); // 공격 확인
 
+		m_baggro = m_aggro; /* 어그로 */
+		bstm = stm; /* 체력 */
 		m_action = m_action_inpput(m_pos, z_pos); // 마동석 행동 선택
-		m_action_f = m_actionf(zombie, m_action, m_aggro, p, stm, &_zombie, &m_baggro, &_m_aggro, &bstm, &_stm); // 마동석 행동
+		m_action_f = m_actionf(zombie, m_action, m_aggro, p, stm, &_zombie, &_m_aggro, &_stm); // 마동석 행동
 		zombie = _zombie;
 		m_aggro = m_aggroMinMax(_m_aggro); // 마동석 어그로 최댓값, 최솟값 확인
 		stm = m_stmMinMax(_stm); // 마동석 체력 최댓값, 최솟값 확인
@@ -269,8 +271,8 @@ int z_move(int count, int zombie, int m_aggro, int c_aggro, int c_pos, int z_pos
 }
 
 int z_movewhere(int m_aggro, int c_aggro, int c_pos, int z_pos, int m_pos, int *_z_pos_) { // 좀비 이동 방향 결정
+	*_z_pos_ = z_pos;
 	if (m_aggro <= c_aggro) {
-		*_z_pos_ = z_pos;
 		if (c_pos == z_pos - 1) {
 			return 3;
 		}
@@ -473,28 +475,25 @@ int m_action_inpput(int m_pos, int z_pos) { // 마동석 행동 선택
 	return m_action;
 }
 
-int m_actionf(int zombie, int m_action, int m_aggro, int p, int stm, int *_zombie, int *m_baggro, int *_m_aggro, int *bstm, int *_stm) { // 마동석 행동
+int m_actionf(int zombie, int m_action, int m_aggro, int p, int stm, int *_zombie, int *_m_aggro, int *_stm) { // 마동석 행동
 	int result = 0;
-	*m_baggro = m_aggro;// 어그로
-	*bstm = stm; // 체력
 	if (m_action == ACTION_REST) {
-		m_aggro--; // 어그로
-		stm++; // 체력
-		result = 0; // 결과 출력
+		m_aggro--; /* 어그로 */
+		stm++; /* 체력 */
+		result = 0; /* 결과 출력 */
 	}
 	else if (m_action == ACTION_PROVOKE) {
-		m_aggro = AGGRO_MAX; // 어그로
-		result = 1; // 결과 출력
+		m_aggro = AGGRO_MAX; /* 어그로 */
+		result = 1; /* 결과 출력 */
 	}
 	else if (m_action == ACTION_PULL) {
-		m_aggro += 2; // 어그로
-		stm--; // 체력
-		zombie++;
-		*_zombie = zombie;
+		m_aggro += 2; /* 어그로 */
+		stm--; /* 체력 */
+		*_zombie = ++zombie; /* 붙들기 */
 		result = m_pull(p);
 	}
-	*_m_aggro = m_aggro; // 어그로
-	*_stm = stm; // 체력
+	*_m_aggro = m_aggro; /* 어그로 */
+	*_stm = stm; /* 체력 */
 	return result;
 }
 
