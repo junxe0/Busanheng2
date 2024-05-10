@@ -35,7 +35,7 @@ void count_line(int);
 void train_box(int, int, int, int);
 int c_move(int, int, int, int *, int *, int *, int *);
 int c_aggroMinMax(int);
-int z_move(int, int, int, int, int, int, int, int *, int *);
+int z_move(int, int, int, int, int, int, int, int *, int *, int *);
 int z_movewhere(int, int, int, int, int, int *);
 void c_moveresult(int, int, int, int, int);
 void z_moveresult(int, int, int);
@@ -49,7 +49,7 @@ int z_who_atk2(int, int, int, int, int *, int *);
 int z_action(int, int, int, int, int, int, int *, int *, int *);
 void ATK_f(int, int, int, int, int, int);
 int m_action_inpput(int, int);
-int m_actionf(int, int, int, int, int *, int *, int *, int *);
+int m_actionf(int, int, int, int, int, int *, int *, int *, int *, int *);
 int m_pull(int);
 int m_stmMinMax(int);
 int m_actionmsg(int, int, int, int, int, int);
@@ -57,7 +57,7 @@ int m_actionmsg(int, int, int, int, int, int);
 int main(void) {
 	intro(); // 콘솔창 이름 변경
 
-	int train_length, p, stm, bstm = 0, count = 0;
+	int train_length, p, stm, bstm = 0, count = 0, zombie = 0;
 	train_length = trainlength_input(); // 기차 길이 입력
 	p = percent_input(); // 퍼센트 입력
 	stm = stm_inpput(); // 체력 입력
@@ -81,18 +81,20 @@ int main(void) {
 
 	int m_move = 0, m_action = 0, m_action_f = 0; // 마동석 관련
 
-	int c_result = 0, z_result = 0, m_result = 0, ATK = 0; // 이동 결과
+	int c_result = 0, z_result = 0, ATK = 0; // 이동 결과
 
 	while (1) { // 반복
 		count++; // 턴 추가
+		zombie++; // 붙잡기
 
 		int _c_aggro, _c_pos, c_baggro, c_bpos;
 		c_result = c_move(p, c_aggro, c_pos, &_c_aggro, &_c_pos, &c_baggro, &c_bpos); // 시민 이동
 		c_pos = _c_pos;
 		c_aggro = c_aggroMinMax(_c_aggro); // 시민 어그로 최댓값, 최솟값 확인
 
-		int _z_pos, z_bpos;
-		z_result = z_move(m_action_f, count, m_aggro, c_aggro, c_pos, z_pos, m_pos, &_z_pos, &z_bpos); // 좀비 이동
+		int _zombie, _z_pos, z_bpos;
+		z_result = z_move(count, zombie, m_aggro, c_aggro, c_pos, z_pos, m_pos, &_zombie, &_z_pos, &z_bpos); // 좀비 이동
+		zombie = _zombie;
 		z_pos = _z_pos;
 
 		count_line(count); // ~번째
@@ -112,7 +114,7 @@ int main(void) {
 		train_box(train_length, c_pos, z_pos, m_pos); // 기차 상자
 		printf("\n\n");
 
-		m_moveresult(m_result, m_bpos, m_pos, m_baggro, m_aggro); // 마동석 이동 출력
+		m_moveresult(m_move, m_bpos, m_pos, m_baggro, m_aggro); // 마동석 이동 출력
 
 		c_action(c_pos); // 시민 행동 출력
 		int z_action_r, _stm;
@@ -122,7 +124,8 @@ int main(void) {
 		ATK_f(z_action_r, m_aggro, c_aggro, bstm, stm, ATK); // 공격 확인
 
 		m_action = m_action_inpput(m_pos, z_pos); // 마동석 행동 선택
-		m_action_f = m_actionf(m_action, m_aggro, p, stm, &m_baggro, &_m_aggro, &bstm, &_stm); // 마동석 행동
+		m_action_f = m_actionf(zombie, m_action, m_aggro, p, stm, &_zombie, &m_baggro, &_m_aggro, &bstm, &_stm); // 마동석 행동
+		zombie = _zombie;
 		m_aggro = m_aggroMinMax(_m_aggro); // 마동석 어그로 최댓값, 최솟값 확인
 		stm = m_stmMinMax(_stm); // 마동석 체력 최댓값, 최솟값 확인
 		m_actionmsg(m_action_f, m_pos, m_baggro, m_aggro, bstm, stm); // 마동석 행동 출력
@@ -214,17 +217,16 @@ void train_box(int train_length, int c_pos, int z_pos, int m_pos) { // 기차 상자
 
 int c_move(int p, int c_aggro, int c_pos, int *_c_aggro, int *_c_pos, int *c_baggro, int *c_bpos) { // 시민 이동
 	int c_per = rand() % 100 + 1;
+	*c_baggro = c_aggro; // 어그로
 	if (c_per <= p) {
 		*_c_pos = c_pos; // 위치
-		*c_baggro = c_aggro; // 어그로
-		c_aggro--;
+		c_aggro--; // 어그로
 		*_c_aggro = c_aggro;
 		return 0; // 결과 출력
 	}
 	else if (c_per > p) {
 		*c_bpos = c_pos; // 위치
 		*_c_pos = c_pos - 1;
-		*c_baggro = c_aggro; // 어그로
 		c_aggro++;
 		*_c_aggro = c_aggro;
 		return 1; // 결과 출력
@@ -243,28 +245,33 @@ int c_aggroMinMax(int _c_aggro) { // 시민 어그로 최솟값 최댓값 판단
 	}
 }
 
-int z_move(int m_action_f, int count, int m_aggro, int c_aggro, int c_pos, int z_pos, int m_pos, int *_z_pos, int *z_bpos) { // 좀비 이동
+int z_move(int count, int zombie, int m_aggro, int c_aggro, int c_pos, int z_pos, int m_pos, int *_zombie, int *_z_pos, int *z_bpos) { // 좀비 이동
+	int _z_pos_, result;
 	*z_bpos = z_pos; // 좀비 이동 전 위치 반환
-	if (m_action_f == 3) {
-		*_z_pos = z_pos; // 위치
-		return 2; // 결과 출력
-	}
-	else if (count % 2 != 0) {
-		int _z_pos_, result;
-		result = z_movewhere(m_aggro, c_aggro, c_pos, z_pos, m_pos, &_z_pos_); // 이동 방향 결정
-		*_z_pos = _z_pos_; // 좀비 현재 위치 반환
-		return result; // 결과 출력
+	*_zombie = zombie;
+	if (count % 2 != 0) {
+		if (count < zombie) {
+			zombie--;
+			*_zombie = zombie;
+			*_z_pos = z_pos; // 위치
+			result = 2; // 결과 출력
+		}
+		else {
+			result = z_movewhere(m_aggro, c_aggro, c_pos, z_pos, m_pos, &_z_pos_); // 이동 방향 결정
+			*_z_pos = _z_pos_; // 좀비 현재 위치 반환
+		}
 	}
 	else {
 		*_z_pos = z_pos; // 좀비 위치 반환
-		return 1; // 결과 출력
+		result = 1; // 결과 출력
 	}
+	return result;
 }
 
 int z_movewhere(int m_aggro, int c_aggro, int c_pos, int z_pos, int m_pos, int *_z_pos_) { // 좀비 이동 방향 결정
 	if (m_aggro <= c_aggro) {
+		*_z_pos_ = z_pos;
 		if (c_pos == z_pos - 1) {
-			*_z_pos_ = z_pos;
 			return 3;
 		}
 		else {
@@ -274,7 +281,6 @@ int z_movewhere(int m_aggro, int c_aggro, int c_pos, int z_pos, int m_pos, int *
 	}
 	else {
 		if (m_pos == z_pos + 1) {
-			*_z_pos_ = z_pos;
 			return 3;
 		}
 		else {
@@ -330,9 +336,9 @@ int m_move_inpput(int m_pos, int z_pos) { // 마동석 이동 선택
 }
 
 int m_movef(int m_move, int m_aggro, int m_pos, int *_m_aggro, int *_m_pos, int *m_baggro, int *m_bpos) {
+	*m_baggro = m_aggro; // 어그로
 	if (m_move == MOVE_STAY) {
 		*_m_pos = m_pos; // 위치
-		*m_baggro = m_aggro; // 어그로
 		m_aggro--;
 		*_m_aggro = m_aggro;
 		return 0; // 결과 출력
@@ -340,7 +346,6 @@ int m_movef(int m_move, int m_aggro, int m_pos, int *_m_aggro, int *_m_pos, int 
 	else if (m_move == MOVE_LEFT) {
 		*m_bpos = m_pos; // 위치
 		*_m_pos = m_pos - 1;
-		*m_baggro = m_aggro; // 어그로
 		m_aggro++;
 		*_m_aggro = m_aggro;
 		return 1; // 결과 출력
@@ -360,10 +365,10 @@ int m_aggroMinMax(int _m_aggro) { // 마동석 어그로 최솟값 최댓값 판단
 }
 
 void m_moveresult(int m_result, int m_bpos, int m_pos, int m_baggro, int m_aggro) { // 마동석 이동 출력
-	if (m_result == 0) {
+	if (m_result == MOVE_STAY) {
 		printf("마동석 : 제자리 %d ( 어그로 : %d -> %d )\n\n", m_pos - 1, m_baggro, m_aggro);
 	}
-	else if (m_result == 1) {
+	else if (m_result == MOVE_LEFT) {
 		printf("마동석 : %d -> %d ( 어그로 : %d -> %d )\n\n", m_bpos - 1, m_pos - 1, m_baggro, m_aggro);
 	}
 }
@@ -371,7 +376,6 @@ void m_moveresult(int m_result, int m_bpos, int m_pos, int m_baggro, int m_aggro
 void c_action(int c_pos) { // 시민 행동 출력
 	if (c_pos == 2) {
 		printf("시민이 탈출에 성공하였습니다.\n");
-		system("color 9f");
 		exit(0);
 	}
 	else {
@@ -379,8 +383,9 @@ void c_action(int c_pos) { // 시민 행동 출력
 	}
 }
 
-int z_action(int z_pos, int c_pos, int m_pos, int m_aggro, int c_aggro, int stm, int *_stm, int *bstm, int *ATK) { // 좀비 행동 출력
+int z_action(int z_pos, int c_pos, int m_pos, int m_aggro, int c_aggro, int stm, int *bstm, int *_stm, int *ATK) { // 좀비 행동 출력
 	*bstm = stm;
+	*_stm = stm;
 	if ((c_pos == (z_pos - 1)) && (m_pos == (z_pos + 1))) {
 		int result, _stm_, _ATK;
 		result = z_who_atk(m_aggro, c_aggro, stm, &_stm_, &_ATK);
@@ -396,7 +401,6 @@ int z_action(int z_pos, int c_pos, int m_pos, int m_aggro, int c_aggro, int stm,
 		return result;
 	}
 	else {
-		*_stm = stm;
 		return ATK_NONE;
 	}
 }
@@ -469,7 +473,7 @@ int m_action_inpput(int m_pos, int z_pos) { // 마동석 행동 선택
 	return m_action;
 }
 
-int m_actionf(int m_action, int m_aggro, int p, int stm, int *m_baggro, int *_m_aggro, int *bstm, int *_stm) { // 마동석 행동
+int m_actionf(int zombie, int m_action, int m_aggro, int p, int stm, int *_zombie, int *m_baggro, int *_m_aggro, int *bstm, int *_stm) { // 마동석 행동
 	int result = 0;
 	*m_baggro = m_aggro;// 어그로
 	*bstm = stm; // 체력
@@ -485,6 +489,8 @@ int m_actionf(int m_action, int m_aggro, int p, int stm, int *m_baggro, int *_m_
 	else if (m_action == ACTION_PULL) {
 		m_aggro += 2; // 어그로
 		stm--; // 체력
+		zombie++;
+		*_zombie = zombie;
 		result = m_pull(p);
 	}
 	*_m_aggro = m_aggro; // 어그로
