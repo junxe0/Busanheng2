@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <time.h>
 
+// 도중 파일 이름을 Busanheng에서 Busanheng2로 변경하여
+// 파일 커밋에는 커밋이 몇개 없습니다.
+
 // 기차길이
 #define LEN_MIN				15
 #define LEN_MAX				50
@@ -73,7 +76,6 @@ int main(void) {
 
 	count_line(count); // ~번째
 	train_box(train_length, c_pos, z_pos, m_pos); // 기차 상자
-	printf("\n\n");
 
 	int c_bpos = 0, z_bpos = 0, m_bpos = 0; // 이동 전 좌표
 
@@ -99,7 +101,6 @@ int main(void) {
 
 		count_line(count); // ~번째
 		train_box(train_length, c_pos, z_pos, m_pos); // 기차 상자
-		printf("\n\n");
 
 		c_moveresult(c_result, c_bpos, c_pos, c_baggro, c_aggro); // 시민 이동 출력
 		z_moveresult(z_result, z_bpos, z_pos); // 좀비 이동 출력
@@ -112,7 +113,6 @@ int main(void) {
 		m_pos = _m_pos;
 
 		train_box(train_length, c_pos, z_pos, m_pos); // 기차 상자
-		printf("\n\n");
 
 		m_moveresult(m_move, m_bpos, m_pos, m_baggro, m_aggro); // 마동석 이동 출력
 
@@ -215,6 +215,7 @@ void train_box(int train_length, int c_pos, int z_pos, int m_pos) { // 기차 상자
 		}
 		printf("\n");
 	}
+	printf("\n\n");
 }
 
 int c_move(int p, int c_aggro, int c_pos, int *_c_aggro, int *_c_pos, int *c_baggro, int *c_bpos) { // 시민 이동
