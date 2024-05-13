@@ -26,11 +26,11 @@
 #define ACTION_PROVOKE		1
 #define ACTION_PULL			2
 
-void intro();
-int trainlength_input();
-int percent_input();
-int stm_inpput();
-void start_msg();
+void intro(void);
+int trainlength_input(void);
+int percent_input(void);
+int stm_inpput(void);
+void start_msg(void);
 void count_line(int);
 void train_box(int, int, int, int);
 int c_move(int, int, int, int *, int *, int *, int *);
@@ -256,7 +256,7 @@ int z_move(int count, int zombie, int m_aggro, int c_aggro, int c_pos, int z_pos
 			result = 2; // 결과 출력
 		}
 		else {
-			result = z_movewhere(m_aggro, c_aggro, c_pos, z_pos, m_pos, &_z_pos_); // 이동 방향 결정
+			result = z_movewhere(m_aggro, c_aggro, c_pos, z_pos, m_pos, &_z_pos_); // 좀비 이동 방향
 			*_z_pos = _z_pos_; // 좀비 현재 위치 반환
 		}
 	}
@@ -267,7 +267,7 @@ int z_move(int count, int zombie, int m_aggro, int c_aggro, int c_pos, int z_pos
 	return result;
 }
 
-int z_movewhere(int m_aggro, int c_aggro, int c_pos, int z_pos, int m_pos, int *_z_pos_) { // 좀비 이동 방향 결정
+int z_movewhere(int m_aggro, int c_aggro, int c_pos, int z_pos, int m_pos, int *_z_pos_) { // 좀비 이동 방향
 	*_z_pos_ = z_pos;
 	if (m_aggro <= c_aggro) {
 		if (c_pos == z_pos - 1) {
