@@ -54,7 +54,7 @@ int m_pull(int, int, int, int *);
 int m_stmMinMax(int);
 int m_actionmsg(int, int, int, int, int, int);
 
-int main(void) { // 메인
+int main(void) {
 	intro(); // 콘솔창 이름 변경
 
 	int train_length, p, stm, bstm = 0, count = 0, zombie = 0;
@@ -139,7 +139,7 @@ void intro() { // 콘솔 창 이름 변경
 	system("title 20242397 류준서 부산헹 2");
 }
 
-int trainlength_input(void) { // 처리 기차 길이 입력
+int trainlength_input(void) { // 기차 길이 입력
 	int train_length;
 	printf("기차의 길이를 입력해주세요. ( %d ~ %d )\n", LEN_MIN, LEN_MAX);
 	scanf_s("%d", &train_length);
