@@ -473,6 +473,7 @@ int m_action_inpput(int m_pos, int z_pos) { // 마동석 행동 선택
 
 int m_actionf(int count, int zombie, int m_action, int m_aggro, int p, int stm, int* _zombie, int* _m_aggro, int* _stm) { // 마동석 행동
 	int result = 0, _zombie_;
+	*_zombie = zombie;
 	if (m_action == ACTION_REST) {
 		m_aggro--; /* 어그로 */
 		stm++; /* 체력 */
